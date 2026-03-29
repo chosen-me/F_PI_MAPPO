@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<net xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+  <location netOffset="0.00,0.00" convBoundary="0.00,-5.00,2000.00,5.00" origBoundary="0.00,-5.00,2000.00,5.00" projParameter="!"/>
+  
+  <!-- 单车道直线 -->
+  <edge id="E0" from="J0" to="J1" priority="-1">
+    <!-- 唯一的车道 -->
+    <lane id="E0_0" index="0" speed="27.78" length="2000.00" shape="0.00,0.00 2000.00,0.00"/>
+  </edge>
+  
+  <!-- 节点定义 -->
+  <junction id="J0" type="dead_end" x="0.00" y="0.00" incLanes="" intLanes="" shape="0.00,0.00"/>
+  <junction id="J1" type="dead_end" x="2000.00" y="0.00" incLanes="E0_0" intLanes="" shape="2000.00,0.00"/>
+</net>

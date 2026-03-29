@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+  <vType id="caccCar" vClass="passenger" accel="3.0" decel="3.0" sigma="0.0" length="4.5" minGap="2.0" maxSpeed="27.78" color="1,0,0" guiShape="passenger" carFollowModel="Krauss" tau="1.5" speedFactor="1.0" speedDev="0.0"/>
+  
+  <!-- 只有一个边E0 -->
+  <route id="eastbound" edges="E0"/>
+  
+  <!-- 所有车辆都在唯一的车道上运行 -->
+  <vehicle id="leader" type="caccCar" route="eastbound" depart="0" departPos="100" departLane="0" departSpeed="5"/>
+  <vehicle id="follower1" type="caccCar" route="eastbound" depart="0" departPos="80" departLane="0" departSpeed="5"/>
+  <vehicle id="follower2" type="caccCar" route="eastbound" depart="0" departPos="60" departLane="0" departSpeed="5"/>
+  <vehicle id="follower3" type="caccCar" route="eastbound" depart="0" departPos="40" departLane="0" departSpeed="5"/>
+</routes>
