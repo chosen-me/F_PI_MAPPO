@@ -21,7 +21,7 @@ sns.set_theme(style="ticks", font=['SimHei', 'Arial Unicode MS'], rc={'axes.unic
 def generate_string_stability_plots():
     print("🚀 启动串稳定性微观测试，准备生成论文三联图...")
 
-    out_dir = "evaluation_results/plots/string_stability"
+    out_dir = "evaluation_results_off/plots/string_stability"
     os.makedirs(out_dir, exist_ok=True)
 
     algorithms = ['Traditional_CACC', 'MPC_CACC', 'DQN', 'DDPG', 'MAPPO', 'PI-MAPPO']
@@ -29,11 +29,11 @@ def generate_string_stability_plots():
     # 实例化算法
     agents = {
         'Traditional_CACC': Traditional_CACC(),
-        'MPC_CACC': MPC_CACC(),
-        'DQN': DQN_Agent(3, 9),
-        'DDPG': DDPG_Agent(3, 9),
-        'MAPPO': MAPPO(3, 9, 1),
-        'PI-MAPPO': PI_MAPPO(3, 9, 1)
+        'MPC_CACC': MPC_CACC(num_agents=5),  # 【优化点1】：显式传入5，保持全代码规范一致
+        'DQN': DQN_Agent(5, 9),
+        'DDPG': DDPG_Agent(5, 9),
+        'MAPPO': MAPPO(5, 9, 1),
+        'PI-MAPPO': PI_MAPPO(5, 9, 1)
     }
 
     # 加载已训练的最佳模型权重
@@ -51,12 +51,12 @@ def generate_string_stability_plots():
         'gui': False,
         'max_steps_per_episode': 800  # 约80秒仿真，足够观察前车扰动传播
     }
-    env = CACCRealTimeEnv(env_config)
+    env = CACCRealTimeEnv(env_config, num_followers=5)
 
-    # 车辆配色：领头车(黑色虚线), 跟随车1(红色), 跟随车2(蓝色), 跟随车3(绿色)
-    colors = ['#2c3e50', '#e74c3c', '#3498db', '#2ecc71']
-    labels = ['领头车 (Leader)', '跟随车1 (Follower 1)', '跟随车2 (Follower 2)', '跟随车3 (Follower 3)']
-    line_styles = ['--', '-', '-', '-']
+    # 车辆配色：领头车(黑色虚线), 跟随车1-5
+    colors = ['#2c3e50', '#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6']
+    labels = ['领头车 (Leader)', '跟随车1 (F1)', '跟随车2 (F2)', '跟随车3 (F3)', '跟随车4 (F4)', '跟随车5 (F5)']
+    line_styles = ['--', '-', '-', '-', '-', '-']
 
     for algo in algorithms:
         print(f"🚗 正在运行测试并绘制算法: {algo}")
@@ -115,7 +115,8 @@ def generate_string_stability_plots():
         # 1. 格式化位置图 (Position)
         axes[0].set_ylabel('位置 Position (m)', fontsize=13, fontweight='bold')
         axes[0].set_title(f'[{algo}] 车辆位置轨迹 (Position Trajectory)', fontsize=15)
-        axes[0].legend(loc='upper left', fontsize=11)
+        # 【优化点2】：使用 ncol=2 分两列显示6个图例，缩小一点字体，防止遮挡重要轨迹
+        axes[0].legend(loc='upper left', fontsize=10, ncol=2)
         axes[0].grid(axis='y', linestyle='--', alpha=0.6)
 
         # 2. 格式化速度图 (Velocity)
