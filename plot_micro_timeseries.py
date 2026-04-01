@@ -22,13 +22,14 @@ def generate_individual_timeseries_charts():
     # 包含所有需要对比的6种算法
     algorithms = ['Traditional_CACC', 'MPC_CACC', 'DQN', 'DDPG', 'MAPPO', 'PI-MAPPO']
 
+    # 【修复点1】：将这里的跟随车数量全部从 3 改为 5，以匹配训练好的模型维度 (45维)
     agents = {
         'Traditional_CACC': Traditional_CACC(),
-        'MPC_CACC': MPC_CACC(),
-        'DQN': DQN_Agent(3, 9),
-        'DDPG': DDPG_Agent(3, 9),
-        'MAPPO': MAPPO(3, 9, 1),
-        'PI-MAPPO': PI_MAPPO(3, 9, 1)
+        'MPC_CACC': MPC_CACC(num_agents=5),
+        'DQN': DQN_Agent(5, 9),
+        'DDPG': DDPG_Agent(5, 9),
+        'MAPPO': MAPPO(5, 9, 1),
+        'PI-MAPPO': PI_MAPPO(5, 9, 1)
     }
 
     # 加载预训练模型权重
@@ -42,7 +43,8 @@ def generate_individual_timeseries_charts():
 
     # 截取前 400 步 (40秒) 作为分析窗口，此时动态变化最剧烈
     env_config = {'scenario_type': 'straight', 'gui': False, 'max_steps_per_episode': 400}
-    env = CACCRealTimeEnv(env_config)
+    # 【修复点2】：将环境中的跟随车辆数量设为 5
+    env = CACCRealTimeEnv(env_config, num_followers=5)
 
     all_step_data = []
 
@@ -80,18 +82,18 @@ def generate_individual_timeseries_charts():
     out_dir = os.path.join("final", "plots")
     os.makedirs(out_dir, exist_ok=True)
 
-    # 统一的高级学术配色，加入 DDPG 的配色（蓝色）
+    # 【修复点3】：更换为高辨识度的清新莫兰迪/马卡龙配色，杜绝颜色重复
     my_palette = {
-        'Traditional_CACC': '#95a5a6',
-        'MPC_CACC': '#f39c12',
-        'DQN': '#e74c3c',
-        'DDPG': '#5dade2',
-        'MAPPO': '#2ecc71',
-        'PI-MAPPO': '#9b59b6'
+        'Traditional_CACC': '#A0AAB2',  # 清新灰 (Soft Slate)
+        'MPC_CACC': '#FFCA3A',          # 明亮黄 (Sunny Yellow)
+        'DQN': '#FFB7B2',               # 蜜桃粉 (Peach Blush)
+        'DDPG': '#1982C4',              # 湖水蓝 (Cerulean Blue)
+        'MAPPO': '#8AC926',             # 薄荷绿 (Mint Green)
+        'PI-MAPPO': '#00C7B1'           # 活力青 (Elegant Purple)
     }
 
     # 通用的图表美化参数
-    fig_size_wide = (12, 4.5)  # 稍微加宽一点以契合你提供的宽屏图片效果
+    fig_size_wide = (12, 4.5)
     fig_size = (10, 5)
     line_width = 2.0
     title_font = 16
@@ -99,18 +101,18 @@ def generate_individual_timeseries_charts():
     tick_font = 12
 
     # ==========================================
-    # 图 1：实时速度跟踪 (Speed) - 你要求的对比图
+    # 图 1：实时速度跟踪 (Speed)
     # ==========================================
     plt.figure(figsize=fig_size_wide)
 
-    # 画出所有算法的速度曲线 (dashes=False 确保全部显示为实线)
+    # 画出所有算法的速度曲线
     sns.lineplot(data=df_steps, x='Time (s)', y='Speed (m/s)', hue='Algorithm',
                  palette=my_palette, linewidth=line_width, dashes=False)
 
-    # 提取并绘制领头车的速度 (提取任一算法期间的领车速度即可，因为路况扰动相同)
+    # 领头车换成高级的深炭灰色，避免和纯黑或算法颜色混淆
     leader_data = df_steps[df_steps['Algorithm'] == 'PI-MAPPO']
     plt.plot(leader_data['Time (s)'], leader_data['Leader Speed (m/s)'],
-             color='black', linestyle='--', linewidth=2.5, label='领头车 (Leader)')
+             color='#2C3E50', linestyle='--', linewidth=2.5, label='领头车 (Leader)')
 
     plt.title('车辆速度跟踪能力对比', fontsize=title_font, fontweight='bold', pad=15)
     plt.xlabel('仿真时间 (秒)', fontsize=label_font)
@@ -118,7 +120,6 @@ def generate_individual_timeseries_charts():
     plt.xticks(fontsize=tick_font)
     plt.yticks(fontsize=tick_font)
 
-    # 智能放置图例：根据你的图片，将图例平铺放在右下角
     plt.legend(loc='lower right', fontsize=11, ncol=3)
 
     save_path_0 = os.path.join(out_dir, "micro_speed_academic.png")
@@ -131,7 +132,7 @@ def generate_individual_timeseries_charts():
     plt.figure(figsize=fig_size)
     ax1 = sns.lineplot(data=df_steps, x='Time (s)', y='Spacing (m)', hue='Algorithm',
                        palette=my_palette, linewidth=line_width, dashes=False)
-    plt.axhline(15.0, color='red', linestyle='--', linewidth=2.0, label='目标间距 (15m)')
+    plt.axhline(15.0, color='#E74C3C', linestyle='--', linewidth=2.0, label='目标间距 (15m)')
 
     plt.title('协同编队微观时序动态：实时车间距跟踪', fontsize=title_font, fontweight='bold', pad=15)
     plt.xlabel('仿真时间 (秒)', fontsize=label_font)
@@ -151,7 +152,7 @@ def generate_individual_timeseries_charts():
     plt.figure(figsize=fig_size)
     ax2 = sns.lineplot(data=df_steps, x='Time (s)', y='TTC (s)', hue='Algorithm',
                        palette=my_palette, linewidth=line_width, dashes=False)
-    plt.axhline(2.5, color='red', linestyle='--', linewidth=2.0, label='安全红线 (TTC=2.5s)')
+    plt.axhline(2.5, color='#E74C3C', linestyle='--', linewidth=2.0, label='安全红线 (TTC=2.5s)')
 
     plt.title('协同编队微观时序动态：碰撞时间余量 (TTC)', fontsize=title_font, fontweight='bold', pad=15)
     plt.xlabel('仿真时间 (秒)', fontsize=label_font)
